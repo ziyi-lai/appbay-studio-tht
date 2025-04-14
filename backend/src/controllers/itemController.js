@@ -1,5 +1,6 @@
 const { Item, Log } = require('../models');
-const { LogAction } = require('../utils/logger');
+const { logAction } = require('../utils/logger');
+const { getPagination, getPagingData } = require('../utils/pagination');
 const { z } = require('zod');
 
 // TODO: Unified error message or system message
@@ -19,7 +20,7 @@ exports.createItem = async (req, res) => {
   try {
     const validatedData = itemSchema.parse(req.body);
     const newItem = await Item.create(validatedData);
-    await LogAction('create', 'Item', { newUser: newItem }); // TODO: not to hardcode 'User'? 
+    await logAction('create', Item.name, { newItem: newItem });
     return res.status(201).json(newItem);
   }
   catch (error) {
@@ -41,7 +42,8 @@ exports.getAllItems = async (req, res) => {
 
     const response = getPagingData(data, page, limit);
     return res.json(response);
-  } catch (error) {
+  }
+  catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
@@ -50,7 +52,7 @@ exports.getAllItems = async (req, res) => {
 exports.getItemById = async (req, res) => {
   try {
     const item = await Item.findOne({ where: { id: req.params.id } });
-    if (!usre) {
+    if (!item) {
       return res.status(404).json({ error: 'Item not found.' });
     }
     return res.json(item);
@@ -66,9 +68,9 @@ exports.updateItem = async (req, res) => {
     const validatedData = partialItemSchema.parse(req.body);
     const item = await Item.findOne({ where: { id: req.params.id } });
     if (!item) {
-      return res.status(404).json({ error: 'User not found.' });
+      return res.status(404).json({ error: 'Item not found.' });
     }
-    const oldData = item.toJson();
+    const oldData = item.toJSON();
     await item.update(validatedData);
     await LogAction('update', 'Item', { before: oldData, after: item });
     return res.json(item);
@@ -78,7 +80,7 @@ exports.updateItem = async (req, res) => {
   }
 };
 
-// Delete User
+// Delete Item
 exports.deleteItem = async (req, res) => {
   try {
     const item = await Item.findOne({ where: { id: req.params.id } });

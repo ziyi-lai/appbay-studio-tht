@@ -1,6 +1,6 @@
-const { User, Log } = require('../models');
+const { User } = require('../models');
 const { USER_ROLES } = require('../constant/role');
-const { LogAction } = require('../utils/logger');
+const { logAction } = require('../utils/logger');
 const { getPagination, getPagingData } = require('../utils/pagination');
 const { z } = require('zod');
 
@@ -15,7 +15,7 @@ const userSchema = z.object({
       message: 'Name must contain only letters and spaces.',
     }),
   email: z.string().email('Invalid email format.'),
-  role: z.enum(USER_ROLES),
+  role: z.enum(Object.values(USER_ROLES)),
 });
 
 // Schema to partially update user
@@ -26,7 +26,7 @@ exports.createUser = async (req, res) => {
   try {
     const validatedData = userSchema.parse(req.body);
     const newUser = await User.create(validatedData);
-    await LogAction('create', 'User', { newUser }); // TODO: not to hardcode 'User'? 
+    await logAction('create', User.name, { newUser });
     return res.status(201).json(newUser);
   }
   catch (error) {
@@ -38,7 +38,7 @@ exports.createUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const { page, limit } = req.query;
-    const { limit: effectiveLimit, offest } = getPagination(page, limit);
+    const { limit: effectiveLimit, offset } = getPagination(page, limit);
 
     const data = await User.findAndCountAll({
       limit: effectiveLimit,
@@ -60,7 +60,7 @@ exports.getAllUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findOne({ where: { id: req.params.id } });
-    if (!usre) {
+    if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
     return res.json(user);
@@ -78,9 +78,9 @@ exports.updateUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
-    const oldData = user.toJson();
-    await user.update(validateData);
-    await LogAction('update', 'User', { before: oldData, after: user });
+    const oldData = user.toJSON();
+    await user.update(validatedData);
+    await logAction('update', 'User', { before: oldData, after: user });
     return res.json(user);
   }
   catch (error) {
@@ -93,9 +93,9 @@ exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findOne({ where: { id: req.params.id } });
     if (!user) {
-      return res.status(404).json({ error: 'User mot found' });
+      return res.status(404).json({ error: 'User not found' });
     }
-    await LogAction('delete', 'User', { deleted: user });
+    await logAction('delete', 'User', { deleted: user });
     await user.destroy();
     return res.json({ message: 'User deleted successfully' });
   }
