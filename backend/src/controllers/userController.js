@@ -1,8 +1,9 @@
 const { User } = require('../models');
-const { USER_ROLES } = require('../constant/role');
+const { USER_ROLES } = require('../enum/role');
 const { logAction } = require('../utils/logger');
 const { getPagination, getPagingData } = require('../utils/pagination');
 const { z } = require('zod');
+const { LOG_ACTION } = require('../enum/action');
 
 // TODO: Unified error message or system message
 
@@ -26,7 +27,7 @@ exports.createUser = async (req, res) => {
   try {
     const validatedData = userSchema.parse(req.body);
     const newUser = await User.create(validatedData);
-    await logAction('create', User.name, { newUser });
+    await logAction(LOG_ACTION.CREATE, User.name, { newUser });
     return res.status(201).json(newUser);
   }
   catch (error) {
@@ -80,7 +81,7 @@ exports.updateUser = async (req, res) => {
     }
     const oldData = user.toJSON();
     await user.update(validatedData);
-    await logAction('update', 'User', { before: oldData, after: user });
+    await logAction(LOG_ACTION.UPDATE, 'User', { before: oldData, after: user });
     return res.json(user);
   }
   catch (error) {
@@ -95,7 +96,7 @@ exports.deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    await logAction('delete', 'User', { deleted: user });
+    await logAction(LOG_ACTION.DELETE, 'User', { deleted: user });
     await user.destroy();
     return res.json({ message: 'User deleted successfully' });
   }

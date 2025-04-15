@@ -1,4 +1,4 @@
-const { USER_ROLES } = require('../constant/role')
+const { USER_ROLES } = require('../enum/role')
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {

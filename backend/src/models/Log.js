@@ -1,3 +1,5 @@
+const { LOG_ACTION } = require("../enum/action");
+
 module.exports = (sequelize, DataTypes) => {
   const Log = sequelize.define('Log', {
     id: {
@@ -6,8 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
     },
     action: {
-      type: DataTypes.ENUM('create', 'update', 'delete'),
-      allowNull: false,
+      type: DataTypes.ENUM(Object.values(LOG_ACTION)),
     },
     model: {
       type: DataTypes.STRING,
