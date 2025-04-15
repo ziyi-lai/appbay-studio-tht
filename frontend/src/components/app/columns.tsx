@@ -59,6 +59,20 @@ export const columns: ColumnDef<User>[] = [
     header: "Role",
   },
   {
+    accessorKey: "createdAt",
+    header: "Joined At",
+    cell: ({ row }) => {
+      const dataValue: Date | undefined= row.original.createdAt;
+      return dataValue
+      ? dataValue.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : "N/A";
+    }
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const user = row.original

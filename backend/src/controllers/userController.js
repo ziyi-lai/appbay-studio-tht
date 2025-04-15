@@ -12,8 +12,8 @@ const userSchema = z.object({
   name: z
     .string()
     .min(1, 'Name is required.')
-    .refine(value => /^[A-Za-z\s]+$/.test(value), {
-      message: 'Name must contain only letters and spaces.',
+    .refine(value => /^[A-Za-z\s0-9]+$/.test(value), {
+      message: 'Name must contain only letters, numbers, and spaces.',
     }),
   email: z.string().email('Invalid email format.'),
   role: z.enum(Object.values(USER_ROLES)),
