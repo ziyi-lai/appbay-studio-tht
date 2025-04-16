@@ -1,5 +1,5 @@
-// src/components/CreateUserDialog.tsx
-import React, { useState } from 'react';
+// src/components/UserDialog.tsx
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,40 +18,59 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { userSchema, USER_ROLES, type User } from "@/types/User";
+import { userSchema, type User } from "@/types/User";
 import userService from "@/services/userService";
 
-interface CreateUserDialogProps {
+interface UserDialogProps {
+  mode: "create" | "update";
+  initialData?: User;
   onUserCreated?: (user: User) => void;
-  triggerLabel?: string;
 }
 
-export function UserDialog({ onUserCreated, triggerLabel }: CreateUserDialogProps) {
+export function UserDialog({
+  mode,
+  initialData,
+  onUserCreated
+}: UserDialogProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  // Role state for "admin" or "user"
   const [role, setRole] = useState<"admin" | "user" | "">("");
   const [errors, setErrors] = useState<{ name?: string; email?: string; role?: string }>({});
   const [open, setOpen] = useState(false);
+
+  // Auto-fill in update mode
+  useEffect(() => {
+    if (mode === "update" && initialData) {
+      setName(initialData.name);
+      setEmail(initialData.email);
+      setRole(initialData.role);
+    }
+  }, [mode, initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     try {
       const validatedData = userSchema.omit({ id: true, createdAt: true }).parse({ name, email, role });
-      // Call the API to create the user.
-      const createdUser = await userService.createUser(validatedData);
-      // Notify the parent component.
-      if (onUserCreated) {
-        onUserCreated(createdUser);
+
+      let user: User;
+      if (mode === "create") {
+        user = await userService.createUser(validatedData);
+      } else {
+        user = await userService.updateUser(initialData!.id, validatedData); // ensure initialData is defined
       }
-      // Optionally reset fields after successful submission.
-      setName("");
-      setEmail("");
-      setRole("");
-      setOpen(false); 
-    } 
-    catch (error: any) {
+
+      if (onUserCreated) {
+        onUserCreated(user);
+      }
+
+      if (mode === "create") {
+        setName("");
+        setEmail("");
+        setRole("");
+      }
+      setOpen(false);
+    } catch (error: any) {
       console.error("Validation error:", error);
       const fieldErrors: { name?: string; email?: string; role?: string } = {};
       error.errors.forEach((err: any) => {
@@ -66,19 +85,20 @@ export function UserDialog({ onUserCreated, triggerLabel }: CreateUserDialogProp
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm">
-          {triggerLabel}
+          {mode === "create" ? "Create User" : "Update User"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create User</DialogTitle>
+          <DialogTitle>{mode === "create" ? "Create User" : "Update User"}</DialogTitle>
           <DialogDescription>
-            Enter the details below to create a new user.
+            {mode === "create"
+              ? "Enter the details below to create a new user."
+              : "Update the user details below."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            {/* Name Field */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">Name</Label>
               <div className="col-span-3">
@@ -87,13 +107,13 @@ export function UserDialog({ onUserCreated, triggerLabel }: CreateUserDialogProp
                   type="text"
                   value={name}
                   placeholder="Enter name"
-                  required={true}
                   onChange={(e) => setName(e.target.value)}
+                  required
                 />
                 {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
               </div>
             </div>
-            {/* Email Field */}
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">Email</Label>
               <div className="col-span-3">
@@ -103,11 +123,12 @@ export function UserDialog({ onUserCreated, triggerLabel }: CreateUserDialogProp
                   value={email}
                   placeholder="Enter email"
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
                 {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
               </div>
             </div>
-            {/* Role Field with Dropdown */}
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">Role</Label>
               <div className="col-span-3">
@@ -131,7 +152,7 @@ export function UserDialog({ onUserCreated, triggerLabel }: CreateUserDialogProp
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Create</Button>
+            <Button type="submit">{mode === "create" ? "Create" : "Update"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

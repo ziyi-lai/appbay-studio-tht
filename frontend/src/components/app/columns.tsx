@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { User } from "@/types/User"
+import { UserDialog } from "@/components/layout/user-dialog"
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -93,7 +94,12 @@ export const columns: ColumnDef<User>[] = [
               Copy User ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit user</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <UserDialog
+                mode="update"
+                initialData={user}>
+              </UserDialog>
+            </DropdownMenuItem>
             <DropdownMenuItem>Delete user</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

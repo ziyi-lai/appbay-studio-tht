@@ -257,7 +257,7 @@ export function DataTable<TData, TValue>({
           </Button>
           {/* Button for creating new user */}
           <UserDialog
-            triggerLabel="Create New User">
+            mode="create">
           </UserDialog>
         </div>
       </div>
