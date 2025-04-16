@@ -83,7 +83,7 @@ export const getColumns = (onUserCreated?: () => void): ColumnDef<User>[] => [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(String(user.id))}>
+            <DropdownMenuItem className="hover:cursor-pointer" onClick={() => navigator.clipboard.writeText(String(user.id))}>
               Copy User ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -91,6 +91,7 @@ export const getColumns = (onUserCreated?: () => void): ColumnDef<User>[] => [
               <UserDialog mode="update" initialData={user} onUserCreated={onUserCreated} />
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="hover:cursor-pointer"
               onClick={async () => {
                 await userService.deleteUser(user.id);
                 toast("User has been deleted", {
