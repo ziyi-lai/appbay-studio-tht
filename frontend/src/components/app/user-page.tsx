@@ -1,6 +1,6 @@
 // src/pages/UserPage.tsx
 import React, { useEffect, useState } from 'react';
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 import { DataTable } from "./data-table";
 import { User } from "@/types/User";
 import userService from '@/services/userService';
@@ -41,17 +41,22 @@ const UserPage: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const handleUserCreated = () => {
+    fetchUserData();
+  };
+
   return (
     <div className="container mx-auto h-full">
       <DataTableWithLoading
         isLoading={loading} 
-        columns={columns}
+        columns={getColumns(handleUserCreated)}
         data={users}
         currentPage={currentPage}
         pageSize={pageSize}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}
+        onUserCreated={handleUserCreated}
       />
     </div>
   );

@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -40,6 +41,7 @@ export interface DataTableProps<TData, TValue> {
   totalPages: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  onUserCreated?: () => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -50,6 +52,7 @@ export function DataTable<TData, TValue>({
   totalPages,
   onPageChange,
   onPageSizeChange,
+  onUserCreated,
 }: DataTableProps<TData, TValue>) {
   // Existing table states
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -64,7 +67,6 @@ export function DataTable<TData, TValue>({
   const [selectedDateFilter, setSelectedDateFilter] = React.useState<
     "all" | "last7" | "last30" | "lastYear"
   >("all");
-  const [combinedFilter, setCombinedFilter] = React.useState("");
 
   const table = useReactTable({
     data,
@@ -107,12 +109,9 @@ export function DataTable<TData, TValue>({
         <div className="flex gap-2">
           {/* Email filter input */}
           <Input
-            placeholder="Filter names and emails..."
-            value={combinedFilter}
+            placeholder="Filter user names..."
             onChange={(event) => {
               const value = event.target.value;
-              setCombinedFilter(value);
-              table.getColumn("email")?.setFilterValue(value);
               table.getColumn("name")?.setFilterValue(value);
             }}
             className="max-w-sm"
@@ -257,7 +256,8 @@ export function DataTable<TData, TValue>({
           </Button>
           {/* Button for creating new user */}
           <UserDialog
-            mode="create">
+            mode="create"
+            onUserCreated={onUserCreated}>
           </UserDialog>
         </div>
       </div>
@@ -307,6 +307,10 @@ export function DataTable<TData, TValue>({
       </div>
       {/* Pagination Controls */}
       <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"

@@ -15,8 +15,10 @@ import {
 
 import { User } from "@/types/User"
 import { UserDialog } from "@/components/layout/user-dialog"
+import userService from "@/services/userService"
+import { toast } from "sonner"
 
-export const columns: ColumnDef<User>[] = [
+export const getColumns = (onUserCreated?: () => void): ColumnDef<User>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -77,7 +79,7 @@ export const columns: ColumnDef<User>[] = [
     id: "actions",
     cell: ({ row }) => {
       const user = row.original
-
+ 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -97,10 +99,24 @@ export const columns: ColumnDef<User>[] = [
             <DropdownMenuItem asChild>
               <UserDialog
                 mode="update"
-                initialData={user}>
+                initialData={user}
+                onUserCreated={onUserCreated}>
               </UserDialog>
             </DropdownMenuItem>
-            <DropdownMenuItem>Delete user</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async ()=> {
+                await userService.deleteUser(user.id);
+                toast("User has been deleted", {
+                  description: `${user.name}(${user.role}) - ${user.email}    `,
+                })
+                
+                if (onUserCreated) {
+                  onUserCreated();
+                }
+
+              }}>
+              Delete User
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
