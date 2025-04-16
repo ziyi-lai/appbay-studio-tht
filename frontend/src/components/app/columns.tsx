@@ -64,7 +64,7 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       const dataValue: Date | undefined= row.original.createdAt;
       return dataValue
-      ? dataValue.toLocaleDateString("en-US", {
+      ? new Date(dataValue).toLocaleDateString("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",
