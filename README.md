@@ -17,38 +17,45 @@ Ensure the following installed on your local machine:
    Clone the repository to your local machine.
    ```bash
    git clone https://github.com/ziyi-lai/appbay-studio-tht.git
+   ```
 
-2. **Navigate to the Backend Directory:**
+2. **Navigate to the Backend Directory:**  
    ```bash
    cd your-repo/backend
+   ```
 
-3. **Install Backend Dependencies:**
-   Install required packages:
+3. **Install Backend Dependencies:**  
+   Install required packages.
    ```bash
    npm install
+   ```
 
-4. **Configure database config:**
+4. **Configure database config:**  
    Edit your PostgreSQL databaseName, userName, and password at backend/src/config/database.js
 
-6. **Start the Backend Development Server:**
-   Launch the backend development server:
+6. **Start the Backend Development Server:**  
+   Launch the backend development server.
    ```
    npm run dev
+   ```
 
-7. **Navigate to the Frontend Directory:**
+7. **Navigate to the Frontend Directory:**  
    ```
    cd ../frontend
+   ```
 
-8. **Install Frontend Dependencies:**
-   Install required packages:
+8. **Install Frontend Dependencies:**  
+   Install required packages.
    ```
    npm install
+   ```
 
-9. **Configure backend API port config:**
+9. **Configure backend API port config:**  
    Edit your local backend port at frontend/src/config/api.tsx
 
-10. **Start the Frontend Development Server:**
-    Launch the frontend development server:
+10. **Start the Frontend Development Server:**  
+    Launch the frontend development server.
     ```
     npm run dev
+    ```
     The server will typically run on http://localhost:5173
