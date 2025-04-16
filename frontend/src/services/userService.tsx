@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { User } from '@/types/User'
-
-const API_BASE_URL = 'http://localhost:5000';
+import { API_BASE_URL } from '@/config/api'
 
 export interface PaginatedUsers {
   totalItems: number;

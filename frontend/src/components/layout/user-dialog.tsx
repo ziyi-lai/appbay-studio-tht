@@ -86,8 +86,13 @@ export function UserDialog({ mode, initialData, onUserCreated }: UserDialogProps
       resetForm();
       setOpen(false);
     } catch (error: any) {
-      console.error("Submission error:", error);
-      setErrors({ name: "An error occurred during submission." });
+      const errorMessage = error.response.data.error[0].message;
+      console.log(errorMessage)
+      if (errorMessage) {
+        toast(mode === "create" ? "Fail to create" : "Fail to update", {
+          description: errorMessage
+        });
+      }
     }
   };
 
@@ -116,7 +121,7 @@ export function UserDialog({ mode, initialData, onUserCreated }: UserDialogProps
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {/* Name Field */}
-            <div className="grid grid-cols-4 items-start gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Name
               </Label>
@@ -134,7 +139,7 @@ export function UserDialog({ mode, initialData, onUserCreated }: UserDialogProps
             </div>
 
             {/* Email Field */}
-            <div className="grid grid-cols-4 items-start gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">
                 Email
               </Label>
@@ -152,7 +157,7 @@ export function UserDialog({ mode, initialData, onUserCreated }: UserDialogProps
             </div>
 
             {/* Role Field */}
-            <div className="grid grid-cols-4 items-start gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
                 Role
               </Label>

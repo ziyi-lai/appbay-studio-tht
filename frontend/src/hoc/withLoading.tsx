@@ -1,7 +1,6 @@
-// src/hoc/withLoading.tsx
 import React from 'react';
 import type { DataTableProps } from '@/components/app/data-table';
-import { Progress } from "@/components/ui/progress";
+import { Progress } from '@/components/ui/progress';
 
 interface WithLoadingProps {
   isLoading: boolean;
@@ -16,7 +15,6 @@ function withLoading<TData, TValue, P extends {}>(
     React.useEffect(() => {
       let interval: NodeJS.Timeout;
       if (isLoading) {
-        // Set an interval to update progress every 500ms
         interval = setInterval(() => {
           setProgress(prev => {
             const newProgress = prev + 15;
@@ -24,7 +22,6 @@ function withLoading<TData, TValue, P extends {}>(
           });
         }, 100);
       } else {
-        // Optionally reset progress when not loading
         setProgress(0);
       }
       return () => {

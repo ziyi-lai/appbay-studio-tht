@@ -1,46 +1,28 @@
-import React, { useEffect, useState } from "react";
+// user-page.tsx
+import React from "react";
+import { useUserContext } from "@/contexts/UserContext";
 import { getColumns } from "@/components/app/columns";
 import { DataTable } from "@/components/app/data-table";
 import { User } from "@/types/User";
-import userService from "@/services/userService";
 import withLoading from "@/hoc/withLoading";
 
 const DataTableWithLoading = withLoading<User, unknown, {}>(DataTable);
 
 const UserPage: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
-  const [totalPages, setTotalPages] = useState<number>(1);
+  const { state, dispatch, fetchUsers } = useUserContext();
+  const { users, loading, currentPage, pageSize, totalPages } = state;
 
-
-  const fetchUserData = async () => {
-    setLoading(true);
-    try {
-      // Simulate loading state
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const data = await userService.fetchUsers(currentPage, pageSize);
-      setUsers(data.records);
-      setTotalPages(data.totalPages);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
+  const handlePageChange = (page: number) => {
+    dispatch({ type: 'SET_PAGE', payload: page });
   };
 
-  useEffect(() => {
-    fetchUserData();
-  }, [currentPage, pageSize]);
-
   const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize);
-    setCurrentPage(1);
+    dispatch({ type: 'SET_PAGE_SIZE', payload: newPageSize });
+    dispatch({ type: 'SET_PAGE', payload: 1 });
   };
 
   const handleUserCreated = () => {
-    fetchUserData();
+    fetchUsers();
   };
 
   return (
@@ -52,7 +34,7 @@ const UserPage: React.FC = () => {
         currentPage={currentPage}
         pageSize={pageSize}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
         onUserCreated={handleUserCreated}
       />
