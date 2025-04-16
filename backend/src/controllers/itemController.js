@@ -4,7 +4,6 @@ const { logAction } = require('../utils/logger');
 const { getPagination, getPagingData } = require('../utils/pagination');
 const { z } = require('zod');
 
-// TODO: Unified error message or system message
 
 // Schema to create item
 const itemSchema = z.object({
@@ -73,7 +72,7 @@ exports.updateItem = async (req, res) => {
     }
     const oldData = item.toJSON();
     await item.update(validatedData);
-    await LogAction(LOG_ACTION.UPDATE, 'Item', { before: oldData, after: item });
+    await logAction(LOG_ACTION.UPDATE, 'Item', { before: oldData, after: item });
     return res.json(item);
   }
   catch (error) {
@@ -88,7 +87,7 @@ exports.deleteItem = async (req, res) => {
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
-    await LogAction(LOG_ACTION.DELETE, 'Item', { deleted: item });
+    await logAction(LOG_ACTION.DELETE, 'Item', { deleted: item });
     await item.destroy();
     return res.json({ message: 'Item deleted successfully' });
   }

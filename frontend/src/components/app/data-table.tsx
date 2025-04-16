@@ -20,18 +20,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { UserDialog } from "@/components/layout/user-dialog";
-
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import { UserDialog } from "@/components/layout/user-dialog";
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -54,50 +51,47 @@ export function DataTable<TData, TValue>({
   onPageSizeChange,
   onUserCreated,
 }: DataTableProps<TData, TValue>) {
-  // Existing table states
+
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  // Hide selected Column(s) from data table
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  // Select row of records
   const [rowSelection, setRowSelection] = React.useState({});
-  // Filter Role
   const [selectedRole, setSelectedRole] = React.useState<"all" | "admin" | "user">("all");
-  // Filter Joined Date
   const [selectedDateFilter, setSelectedDateFilter] = React.useState<
     "all" | "last7" | "last30" | "lastYear"
   >("all");
 
+
   const table = useReactTable({
     data,
     columns,
+    state: { sorting, columnFilters, columnVisibility, rowSelection },
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
     manualPagination: true,
     pageCount: totalPages,
   });
 
+  // Helper to calculate date threshold filters
   const getDateThreshold = (filter: "last7" | "last30" | "lastYear"): string => {
     const now = new Date();
     let threshold: Date;
-    if (filter === "last7") {
-      threshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    } else if (filter === "last30") {
-      threshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    } else { // lastYear
-      threshold = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+    switch (filter) {
+      case "last7":
+        threshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "last30":
+        threshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        threshold = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
     }
     return threshold.toISOString();
   };
@@ -105,18 +99,17 @@ export function DataTable<TData, TValue>({
   return (
     <div className="p-12">
       <h1 className="font-bold text-2xl">USER MANAGEMENT</h1>
+
+      {/* Toolbar Section */}
       <div className="flex justify-between items-center py-4">
         <div className="flex gap-2">
-          {/* Email filter input */}
+          {/* Searchbar Input */}
           <Input
             placeholder="Filter user names..."
-            onChange={(event) => {
-              const value = event.target.value;
-              table.getColumn("name")?.setFilterValue(value);
-            }}
+            onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
             className="max-w-sm"
           />
-          {/* Role Filter Dropdown */}
+          {/* Role Filter */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
@@ -124,7 +117,6 @@ export function DataTable<TData, TValue>({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {/* "All" option resets the role filter */}
               <DropdownMenuCheckboxItem
                 checked={selectedRole === "all"}
                 onCheckedChange={(value) => {
@@ -136,7 +128,6 @@ export function DataTable<TData, TValue>({
               >
                 All
               </DropdownMenuCheckboxItem>
-              {/* Filter by "admin" */}
               <DropdownMenuCheckboxItem
                 checked={selectedRole === "admin"}
                 onCheckedChange={(value) => {
@@ -148,7 +139,6 @@ export function DataTable<TData, TValue>({
               >
                 Admin
               </DropdownMenuCheckboxItem>
-              {/* Filter by "user" */}
               <DropdownMenuCheckboxItem
                 checked={selectedRole === "user"}
                 onCheckedChange={(value) => {
@@ -162,7 +152,7 @@ export function DataTable<TData, TValue>({
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          {/* Joined Date Filter Dropdown */}
+          {/* Joined Date Filter */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">Joined Date</Button>
@@ -173,7 +163,6 @@ export function DataTable<TData, TValue>({
                 onCheckedChange={(value) => {
                   if (value) {
                     setSelectedDateFilter("all");
-                    // Clear the filter for joinedAt column
                     table.getColumn("joinedAt")?.setFilterValue("");
                   }
                 }}
@@ -185,7 +174,6 @@ export function DataTable<TData, TValue>({
                 onCheckedChange={(value) => {
                   if (value) {
                     setSelectedDateFilter("last7");
-                    // Set the filter value to the threshold ISO string for last 7 days
                     table.getColumn("joinedAt")?.setFilterValue(getDateThreshold("last7"));
                   }
                 }}
@@ -216,7 +204,7 @@ export function DataTable<TData, TValue>({
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          {/* Columns Filter Dropdown */}
+          {/* Columns Filter */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
@@ -224,70 +212,49 @@ export function DataTable<TData, TValue>({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column) => column.getCanHide()
-                )
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
+              {table.getAllColumns().filter((column) => column.getCanHide()).map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Right Toolbar Section */}
         <div className="flex gap-2">
-          {/* Button for export data */}
-          <Button 
-            variant="outline"
-            size="sm"
-          >
+          {/* TODO: Export user records */}
+          <Button variant="outline" size="sm">
             Export
           </Button>
-          {/* Button for creating new user */}
-          <UserDialog
-            mode="create"
-            onUserCreated={onUserCreated}>
-          </UserDialog>
+          <UserDialog mode="create" onUserCreated={onUserCreated} />
         </div>
       </div>
+
+      {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {!header.isPlaceholder &&
+                      flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -305,13 +272,17 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {/* Pagination Controls */}
+
+      {/* Pagination */}
       <div className="flex items-center justify-between space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {/* Left: Selection summary */}
+        <div className="flex-1 text-sm text-muted-foreground w-1/3">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="flex gap-2">
+
+        {/* Center: Pagination buttons */}
+        <div className="flex gap-1 w-1/3 justify-center">
           <Button
             variant="outline"
             size="sm"
@@ -320,6 +291,21 @@ export function DataTable<TData, TValue>({
           >
             Previous
           </Button>
+
+          {Array.from({ length: totalPages }, (_, index) => {
+            const pageNumber = index + 1;
+            return (
+              <Button
+                key={pageNumber}
+                variant={pageNumber === currentPage ? "default" : "outline"}
+                size="sm"
+                onClick={() => onPageChange(pageNumber)}
+              >
+                {pageNumber}
+              </Button>
+            );
+          })}
+
           <Button
             variant="outline"
             size="sm"
@@ -329,29 +315,30 @@ export function DataTable<TData, TValue>({
             Next
           </Button>
         </div>
-        {/* Rows per Page Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              Rows per page: {pageSize}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {[10, 25, 50, 100].map((pageSizeOption) => (
-              <DropdownMenuCheckboxItem
-                key={pageSizeOption}
-                checked={pageSize === pageSizeOption}
-                onCheckedChange={(value) => {
-                  if (value) {
-                    onPageSizeChange(pageSizeOption);
-                  }
-                }}
-              >
-                {pageSizeOption}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+
+        {/* Right: Rows per page dropdown */}
+        <div className="w-1/3 flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                Rows per page: {pageSize}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {[10, 25, 50, 100].map((pageSizeOption) => (
+                <DropdownMenuCheckboxItem
+                  key={pageSizeOption}
+                  checked={pageSize === pageSizeOption}
+                  onCheckedChange={(value) => {
+                    if (value) onPageSizeChange(pageSizeOption);
+                  }}
+                >
+                  {pageSizeOption}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );

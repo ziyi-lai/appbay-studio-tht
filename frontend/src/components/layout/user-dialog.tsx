@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { userSchema, type User } from "@/types/User";
 import userService from "@/services/userService";
-import clsx from 'clsx';
+import clsx from "clsx";
 import { toast } from "sonner";
 
 interface UserDialogProps {
@@ -28,18 +28,15 @@ interface UserDialogProps {
   onUserCreated?: () => void;
 }
 
-export function UserDialog({
-  mode,
-  initialData,
-  onUserCreated
-}: UserDialogProps) {
+export function UserDialog({ mode, initialData, onUserCreated }: UserDialogProps) {
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "user">("admin");
   const [errors, setErrors] = useState<{ name?: string; email?: string; role?: string }>({});
   const [open, setOpen] = useState(false);
 
-  // Auto-fill in update mode
+  // Auto-fill form with record data
   useEffect(() => {
     if (mode === "update" && initialData) {
       setName(initialData.name);
@@ -48,17 +45,21 @@ export function UserDialog({
     }
   }, [mode, initialData]);
 
+  // Clear form
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setRole("admin");
+  };
+
+  // Form submit handler with Zod validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
-    // Validate input using the schema (omit id and createdAt since they're set by the server)
-    const result = userSchema
-      .omit({ id: true, createdAt: true })
-      .safeParse({ name, email, role });
-
+    const result = userSchema.omit({ id: true, createdAt: true }).safeParse({ name, email, role });
     if (!result.success) {
-      // Extract error messages from Zod and set them in state.
+      // Build error messages from Zod error paths
       const fieldErrors: { name?: string; email?: string; role?: string } = {};
       result.error.errors.forEach((err) => {
         const key = err.path[0] as "name" | "email" | "role";
@@ -68,40 +69,24 @@ export function UserDialog({
       return;
     }
 
-    const validatedData = result.data;
     try {
       let user: User;
       if (mode === "create") {
-        user = await userService.createUser(validatedData);
+        user = await userService.createUser(result.data);
       } else {
-        if (!initialData?.id) {
-          throw new Error("Missing user ID for update.");
-        }
-        user = await userService.updateUser(initialData!.id, validatedData);
+        if (!initialData?.id) throw new Error("Missing user ID for update.");
+        user = await userService.updateUser(initialData.id, result.data);
       }
-      const toastTitle = mode === "create" ? "User has been created" : "User has been updated";
-      toast(toastTitle, {
+
+      toast(mode === "create" ? "User has been created" : "User has been updated", {
         description: `${user.name}(${user.role}) - ${user.email}`,
       });
 
-      if (onUserCreated) {
-        onUserCreated();
-      }
-
-      // Reset form if in create mode.
-      if (mode === "create") {
-        setName("");
-        setEmail("");
-        setRole("admin");
-      }
+      onUserCreated?.();
+      resetForm();
       setOpen(false);
-      setName("");
-      setEmail("");
-      setRole("admin");
     } catch (error: any) {
       console.error("Submission error:", error);
-      // Optionally, handle backend errors here as needed.
-      // For example, you might extract a general error message and display it.
       setErrors({ name: "An error occurred during submission." });
     }
   };
@@ -109,11 +94,11 @@ export function UserDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant={mode === "create" ? "default" : "outline"} 
-          size="sm" 
+        <Button
+          variant={mode === "create" ? "default" : "outline"}
+          size="sm"
           className={clsx({
-            "justify-start text-left w-full border-none px-2 py-2 font-normal h-8 rounded-sm": mode === "update"
+            "justify-start text-left w-full border-none px-2 py-2 font-normal h-8 rounded-sm": mode === "update",
           })}
         >
           {mode === "create" ? "Create User" : "Update User"}
@@ -130,8 +115,11 @@ export function UserDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right ">Name</Label>
+            {/* Name Field */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
               <div className="col-span-3">
                 <Input
                   id="name"
@@ -141,11 +129,15 @@ export function UserDialog({
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
-                {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">Email</Label>
+
+            {/* Email Field */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
               <div className="col-span-3">
                 <Input
                   id="email"
@@ -155,11 +147,15 @@ export function UserDialog({
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="role" className="text-right">Role</Label>
+
+            {/* Role Field */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="role" className="text-right">
+                Role
+              </Label>
               <div className="col-span-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -168,15 +164,11 @@ export function UserDialog({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => setRole("admin")}>
-                      Admin
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setRole("user")}>
-                      User
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setRole("admin")}>Admin</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setRole("user")}>User</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+                {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
               </div>
             </div>
           </div>

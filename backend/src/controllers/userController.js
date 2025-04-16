@@ -5,7 +5,6 @@ const { getPagination, getPagingData } = require('../utils/pagination');
 const { z } = require('zod');
 const { LOG_ACTION } = require('../enum/action');
 
-// TODO: Unified error message or system message
 
 // Schema to create user
 const userSchema = z.object({
