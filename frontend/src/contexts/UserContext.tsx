@@ -59,6 +59,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const fetchUsers = async () => {
     dispatch({ type: 'FETCH_START' });
     try {
+      // Simulate loading
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const data = await userService.fetchUsers(state.currentPage, state.pageSize);
       dispatch({
         type: 'FETCH_SUCCESS',

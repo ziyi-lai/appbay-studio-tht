@@ -17,7 +17,7 @@ function withLoading<TData, TValue, P extends {}>(
       if (isLoading) {
         interval = setInterval(() => {
           setProgress(prev => {
-            const newProgress = prev + 15;
+            const newProgress = prev + 25;
             return newProgress > 100 ? 100 : newProgress;
           });
         }, 100);
