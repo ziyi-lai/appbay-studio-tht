@@ -6,16 +6,21 @@ const cors = require('cors');
 const userRouter = require('./src/routes/userRoute');
 const itemRouter = require('./src/routes/itemRoute');
 
+// Initialize app
 const app = express();
 
-
-// Allow cross-origin request
+// Middleware
 app.use(cors());
-// Parse JSON for requests
 app.use(bodyParser.json());
 
+// Mount routes
 app.use('/users', userRouter);
 app.use('/items', itemRouter);
+
+// Test root route
+app.get('/', (req, res) => {
+  res.send('Server is running and connected to database.');
+});
 
 // Connect database
 const db = require('./src/models');
@@ -33,7 +38,12 @@ db.sequelize.sync()
     console.error('Error syncing database:', error);
   });
 
-app.get('/', (req, res) => {
-  res.send('Server is running and connected to database.');
+// Detect if Node.js is killed
+process.on('exit', (code) => {
+  console.log(`Node process exiting with code ${code}`);
 });
 
+process.on('SIGINT', () => {
+  console.log('Caught SIGINT (e.g., Ctrl+C). Exiting...');
+  process.exit();
+});
